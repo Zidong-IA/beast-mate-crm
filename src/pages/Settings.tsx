@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import GoogleContactsSync from "@/components/GoogleContactsSync";
 
 const spaces = [
   { name: "Fichas cargadas", color: "accent" },
@@ -20,6 +21,8 @@ export default function Settings() {
         </div>
         <Button variant="hero" size="sm"><Plus className="h-4 w-4" />Agregar</Button>
       </section>
+
+      <GoogleContactsSync />
 
       <Card className="card-elevated">
         <CardHeader>

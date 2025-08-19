@@ -6,11 +6,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Paperclip, Smile, MoreVertical, Phone, Video, Wifi, WifiOff } from "lucide-react";
+import { Send, Paperclip, Smile, MoreVertical, Phone, Video, Wifi, WifiOff, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreditMenu } from "./CreditMenu";
 import { QuickReplyAutocomplete } from "./QuickReplyAutocomplete";
 import { QuickReply } from "@/hooks/useQuickReplies";
+import { AdvancedCreditLoader } from "./AdvancedCreditLoader";
+import { useUserProfiles, UserProfile } from "@/hooks/useUserProfiles";
 
 interface Session {
   id: string;
@@ -94,9 +96,26 @@ export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatM
   const [isTyping, setIsTyping] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session>(availableSessions[0]);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [showAdvancedCreditLoader, setShowAdvancedCreditLoader] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { clients } = useUserProfiles();
+
+  // Find client profile from contacts
+  const clientProfile = clients.find(c => c.phone === contact.phone) || {
+    id: contact.id,
+    user_id: contact.id,
+    role: 'client' as const,
+    name: contact.name,
+    phone: contact.phone,
+    balance: 0,
+    total_loaded: 0,
+    withdrawable_balance: 0,
+    status: 'active',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  } as UserProfile;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -348,6 +367,15 @@ export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatM
               contactName={contact.name} 
               onCreditAdded={handleCreditAdded}
             />
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-9 w-9"
+              onClick={() => setShowAdvancedCreditLoader(true)}
+              title="Cargador Avanzado de Fichas"
+            >
+              <Wallet className="h-4 w-4" />
+            </Button>
             <Button size="icon" variant="ghost" className="h-9 w-9">
               <Smile className="h-4 w-4" />
             </Button>
@@ -361,6 +389,24 @@ export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatM
             </Button>
           </div>
         </div>
+
+        <AdvancedCreditLoader 
+          isOpen={showAdvancedCreditLoader}
+          onClose={() => setShowAdvancedCreditLoader(false)}
+          client={clientProfile}
+          onCreditLoaded={(amount, transaction) => {
+            const creditMessage: Message = {
+              id: Date.now().toString(),
+              content: `💰 Carga exitosa: ${amount} fichas cargadas via cargador avanzado\n📋 Comprobante: ${transaction.receipt_number}\n${transaction.notes ? `📝 Notas: ${transaction.notes}` : ''}`,
+              type: "text",
+              direction: "sent",
+              timestamp: new Date(),
+              status: "sent"
+            };
+            
+            setMessages(prev => [...prev, creditMessage]);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

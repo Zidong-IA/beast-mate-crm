@@ -436,6 +436,60 @@ export type Database = {
           },
         ]
       }
+      credit_transactions: {
+        Row: {
+          agent_id: string
+          amount: number
+          client_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          receipt_number: string | null
+          status: string | null
+          type: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          client_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          receipt_number?: string | null
+          status?: string | null
+          type: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          receipt_number?: string | null
+          status?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           amount: number | null
@@ -1112,6 +1166,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          agent_id: string | null
+          avatar_url: string | null
+          balance: number | null
+          created_at: string | null
+          email: string | null
+          google_contact_id: string | null
+          id: string
+          metadata: Json | null
+          name: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          status: string | null
+          total_loaded: number | null
+          updated_at: string | null
+          user_id: string
+          withdrawable_balance: number | null
+        }
+        Insert: {
+          agent_id?: string | null
+          avatar_url?: string | null
+          balance?: number | null
+          created_at?: string | null
+          email?: string | null
+          google_contact_id?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string | null
+          total_loaded?: number | null
+          updated_at?: string | null
+          user_id: string
+          withdrawable_balance?: number | null
+        }
+        Update: {
+          agent_id?: string | null
+          avatar_url?: string | null
+          balance?: number | null
+          created_at?: string | null
+          email?: string | null
+          google_contact_id?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string | null
+          total_loaded?: number | null
+          updated_at?: string | null
+          user_id?: string
+          withdrawable_balance?: number | null
+        }
+        Relationships: []
+      }
       webhook_subscriptions: {
         Row: {
           active: boolean | null
@@ -1158,6 +1269,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       get_user_tenant_ids: {
         Args: Record<PropertyKey, never>
         Returns: string[]
@@ -1183,6 +1298,7 @@ export type Database = {
       role_type: "owner" | "admin" | "manager" | "agent" | "viewer"
       tenant_plan: "starter" | "pro" | "business" | "enterprise"
       tenant_status: "active" | "suspended" | "cancelled"
+      user_role: "admin" | "agent" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1330,6 +1446,7 @@ export const Constants = {
       role_type: ["owner", "admin", "manager", "agent", "viewer"],
       tenant_plan: ["starter", "pro", "business", "enterprise"],
       tenant_status: ["active", "suspended", "cancelled"],
+      user_role: ["admin", "agent", "client"],
     },
   },
 } as const

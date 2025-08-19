@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
+import { ChatModal } from "@/components/chat/ChatModal";
 import {
   DndContext,
   closestCorners,
@@ -76,7 +79,7 @@ function DroppableColumn({ children, columnId }: { children: React.ReactNode; co
 }
 
 // Componente para cada chat individual que es draggable
-function DraggableChat({ lead }: { lead: Lead }) {
+function DraggableChat({ lead, onOpenChat }: { lead: Lead; onOpenChat: (lead: Lead) => void }) {
   const {
     attributes,
     listeners,
@@ -96,14 +99,27 @@ function DraggableChat({ lead }: { lead: Lead }) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className={`rounded-lg border bg-card/60 p-3 hover:bg-muted/40 transition cursor-grab active:cursor-grabbing ${
+      className={`rounded-lg border bg-card/60 p-3 hover:bg-muted/40 transition ${
         isDragging ? 'opacity-50 scale-95' : ''
       }`}
     >
-      <div className="font-medium">{lead.name}</div>
-      <div className="text-xs text-muted-foreground truncate">{lead.note}</div>
+      <div className="flex items-center justify-between">
+        <div className="flex-1 cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+          <div className="font-medium">{lead.name}</div>
+          <div className="text-xs text-muted-foreground truncate">{lead.note}</div>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 ml-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenChat(lead);
+          }}
+        >
+          <MessageCircle className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -111,6 +127,13 @@ function DraggableChat({ lead }: { lead: Lead }) {
 export default function Pipeline() {
   const [leads, setLeads] = useState<Record<typeof columns[number]["id"], Lead[]>>(initialLeads);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+
+  const handleOpenChat = (lead: Lead) => {
+    setSelectedLead(lead);
+    setIsChatModalOpen(true);
+  };
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -233,7 +256,7 @@ export default function Pipeline() {
                     strategy={verticalListSortingStrategy}
                   >
                     {leads[col.id].map((lead) => (
-                      <DraggableChat key={lead.id} lead={lead} />
+                      <DraggableChat key={lead.id} lead={lead} onOpenChat={handleOpenChat} />
                     ))}
                   </SortableContext>
                 </DroppableColumn>
@@ -261,6 +284,23 @@ export default function Pipeline() {
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/* Chat Modal */}
+      {selectedLead && (
+        <ChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => {
+            setIsChatModalOpen(false);
+            setSelectedLead(null);
+          }}
+          session={{
+            id: `session-${selectedLead.id}`,
+            name: selectedLead.name,
+            type: "whatsapp",
+            status: "connected"
+          }}
+        />
+      )}
     </div>
   );
 }

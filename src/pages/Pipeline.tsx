@@ -9,6 +9,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -79,7 +81,9 @@ function DraggableChat({ lead }: { lead: Lead }) {
       style={style}
       {...attributes}
       {...listeners}
-      className="rounded-lg border bg-card/60 p-3 hover:bg-muted/40 transition cursor-grab active:cursor-grabbing"
+      className={`rounded-lg border bg-card/60 p-3 hover:bg-muted/40 transition cursor-grab active:cursor-grabbing ${
+        isDragging ? 'opacity-50 scale-95' : ''
+      }`}
     >
       <div className="font-medium">{lead.name}</div>
       <div className="text-xs text-muted-foreground truncate">{lead.note}</div>
@@ -89,6 +93,7 @@ function DraggableChat({ lead }: { lead: Lead }) {
 
 export default function Pipeline() {
   const [leads, setLeads] = useState<Record<typeof columns[number]["id"], Lead[]>>(initialLeads);
+  const [activeId, setActiveId] = useState<string | null>(null);
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -97,8 +102,14 @@ export default function Pipeline() {
     })
   );
 
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    
+    setActiveId(null);
     
     if (!over) return;
 
@@ -168,6 +179,14 @@ export default function Pipeline() {
     return null;
   }
 
+  function findLeadById(leadId: string): Lead | null {
+    for (const columnLeads of Object.values(leads)) {
+      const lead = columnLeads.find(lead => lead.id === leadId);
+      if (lead) return lead;
+    }
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <section>
@@ -178,6 +197,7 @@ export default function Pipeline() {
       <DndContext 
         sensors={sensors}
         collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -211,6 +231,22 @@ export default function Pipeline() {
             </Card>
           ))}
         </section>
+        
+        <DragOverlay>
+          {activeId ? (
+            <div className="rounded-lg border bg-card/90 backdrop-blur-sm p-3 shadow-lg rotate-3 scale-105 animate-pulse">
+              {(() => {
+                const activeLead = findLeadById(activeId);
+                return activeLead ? (
+                  <>
+                    <div className="font-medium">{activeLead.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">{activeLead.note}</div>
+                  </>
+                ) : null;
+              })()}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

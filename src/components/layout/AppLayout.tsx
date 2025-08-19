@@ -12,7 +12,7 @@ export default function AppLayout() {
   }, []);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full ambient-bg">
         <AppSidebar />
         <SidebarInset>

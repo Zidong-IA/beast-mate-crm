@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   DndContext,
-  closestCenter,
+  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -11,6 +11,7 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -57,6 +58,22 @@ const initialLeads: Record<typeof columns[number]["id"], Lead[]> = {
     { id: "lead-8", name: "pelu1237", note: "Chat cerrado..." },
   ],
 };
+
+// Componente para cada columna que es droppable
+function DroppableColumn({ children, columnId }: { children: React.ReactNode; columnId: string }) {
+  const { setNodeRef } = useDroppable({
+    id: `column-${columnId}`,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="space-y-2 min-h-[200px] p-2 rounded-lg"
+    >
+      {children}
+    </div>
+  );
+}
 
 // Componente para cada chat individual que es draggable
 function DraggableChat({ lead }: { lead: Lead }) {
@@ -196,7 +213,7 @@ export default function Pipeline() {
 
       <DndContext 
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
@@ -210,20 +227,16 @@ export default function Pipeline() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <SortableContext 
-                  items={leads[col.id].map(lead => lead.id)}
-                  strategy={verticalListSortingStrategy}
-                  id={`column-${col.id}`}
-                >
-                  <div 
-                    className="space-y-2 min-h-[100px]"
-                    id={`column-${col.id}`}
+                <DroppableColumn columnId={col.id}>
+                  <SortableContext 
+                    items={leads[col.id].map(lead => lead.id)}
+                    strategy={verticalListSortingStrategy}
                   >
                     {leads[col.id].map((lead) => (
                       <DraggableChat key={lead.id} lead={lead} />
                     ))}
-                  </div>
-                </SortableContext>
+                  </SortableContext>
+                </DroppableColumn>
                 <div className="rounded-lg border border-dashed text-muted-foreground text-sm p-3 grid place-items-center">
                   + Agregar
                 </div>

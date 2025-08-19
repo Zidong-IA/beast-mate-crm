@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Send, Paperclip, Smile, MoreVertical, Phone, Video, Wifi, WifiOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CreditMenu } from "./CreditMenu";
+import { QuickReplyAutocomplete } from "./QuickReplyAutocomplete";
+import { QuickReply } from "@/hooks/useQuickReplies";
 
 interface Session {
   id: string;
@@ -90,7 +93,9 @@ export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatM
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session>(availableSessions[0]);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const scrollToBottom = () => {
@@ -134,10 +139,38 @@ export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatM
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !showQuickReplies) {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleQuickReplySelect = (reply: QuickReply) => {
+    setNewMessage(reply.content);
+    setShowQuickReplies(false);
+    inputRef.current?.focus();
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+    setShowQuickReplies(value.startsWith('//'));
+  };
+
+  const handleCreditAdded = (credits: number, pkg?: any) => {
+    const creditMessage: Message = {
+      id: Date.now().toString(),
+      content: `✅ Se han cargado ${credits} fichas a la cuenta de ${contact.name}${pkg ? ` (Paquete: ${pkg.name})` : ''}`,
+      type: "text",
+      direction: "sent",
+      timestamp: new Date(),
+      status: "sent"
+    };
+    
+    setMessages(prev => [...prev, creditMessage]);
+    toast({ 
+      description: `${credits} fichas cargadas correctamente`
+    });
   };
 
   const formatTime = (date: Date) => {
@@ -295,15 +328,26 @@ export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatM
             <Button size="icon" variant="ghost" className="h-9 w-9">
               <Paperclip className="h-4 w-4" />
             </Button>
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <Input
-                placeholder="Escribe un mensaje..."
+                ref={inputRef}
+                placeholder="Escribe un mensaje... (// para respuestas rápidas)"
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={handleMessageChange}
                 onKeyPress={handleKeyPress}
                 className="border-0 focus-visible:ring-1"
               />
+              <QuickReplyAutocomplete
+                inputValue={newMessage}
+                onSelect={handleQuickReplySelect}
+                isVisible={showQuickReplies}
+                inputRef={inputRef}
+              />
             </div>
+            <CreditMenu 
+              contactName={contact.name} 
+              onCreditAdded={handleCreditAdded}
+            />
             <Button size="icon" variant="ghost" className="h-9 w-9">
               <Smile className="h-4 w-4" />
             </Button>

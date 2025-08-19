@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Send, Paperclip, Smile, MoreVertical, Phone, Video } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Send, Paperclip, Smile, MoreVertical, Phone, Video, Wifi, WifiOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Session {
@@ -37,7 +38,8 @@ interface Contact {
 interface ChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  session: Session;
+  contact: Contact;
+  availableSessions: Session[];
 }
 
 // Mock data
@@ -83,10 +85,11 @@ const mockMessages: Message[] = [
   }
 ];
 
-export function ChatModal({ isOpen, onClose, session }: ChatModalProps) {
+export function ChatModal({ isOpen, onClose, contact, availableSessions }: ChatModalProps) {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<Session>(availableSessions[0]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -112,7 +115,9 @@ export function ChatModal({ isOpen, onClose, session }: ChatModalProps) {
 
     setMessages(prev => [...prev, message]);
     setNewMessage("");
-    toast({ description: "Mensaje enviado" });
+    toast({ 
+      description: `Mensaje enviado vía ${selectedSession.name} (${getSessionIcon(selectedSession.type)})` 
+    });
 
     // Simulate message status updates
     setTimeout(() => {
@@ -152,8 +157,8 @@ export function ChatModal({ isOpen, onClose, session }: ChatModalProps) {
     }
   };
 
-  const getSessionIcon = () => {
-    switch (session.type) {
+  const getSessionIcon = (type: Session['type']) => {
+    switch (type) {
       case "whatsapp":
       case "evolution":
         return "💬";
@@ -176,29 +181,31 @@ export function ChatModal({ isOpen, onClose, session }: ChatModalProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={mockContact.avatar} />
-                <AvatarFallback>{mockContact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                <AvatarImage src={contact.avatar} />
+                <AvatarFallback>{contact.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
               </Avatar>
               <div>
                 <DialogTitle className="flex items-center space-x-2">
-                  <span>{mockContact.name}</span>
-                  <span className="text-sm">{getSessionIcon()}</span>
+                  <span>{contact.name}</span>
+                  {contact.isOnline ? (
+                    <Wifi className="h-4 w-4 text-primary" />
+                  ) : (
+                    <WifiOff className="h-4 w-4 text-muted-foreground" />
+                  )}
                 </DialogTitle>
                 <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                  <div className={`h-2 w-2 rounded-full ${mockContact.isOnline ? 'bg-primary' : 'bg-muted-foreground'}`} />
+                  <span>{contact.phone}</span>
+                  <div className={`h-2 w-2 rounded-full ${contact.isOnline ? 'bg-primary' : 'bg-muted-foreground'}`} />
                   <span>
-                    {mockContact.isOnline 
+                    {contact.isOnline 
                       ? "En línea" 
-                      : `Visto por última vez ${formatTime(mockContact.lastSeen!)}`
+                      : `Visto ${formatTime(contact.lastSeen!)}`
                     }
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className="text-xs">
-                {session.name}
-              </Badge>
               <Button size="icon" variant="ghost" className="h-8 w-8">
                 <Phone className="h-4 w-4" />
               </Button>
@@ -208,6 +215,34 @@ export function ChatModal({ isOpen, onClose, session }: ChatModalProps) {
               <Button size="icon" variant="ghost" className="h-8 w-8">
                 <MoreVertical className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+          
+          {/* Session Selector */}
+          <div className="pt-3 border-t mt-3">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium">Enviar desde:</span>
+              <Select value={selectedSession.id} onValueChange={(value) => {
+                const session = availableSessions.find(s => s.id === value);
+                if (session) setSelectedSession(session);
+              }}>
+                <SelectTrigger className="w-auto min-w-[200px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSessions.map((session) => (
+                    <SelectItem key={session.id} value={session.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{getSessionIcon(session.type)}</span>
+                        <span>{session.name}</span>
+                        <Badge variant={session.status === "connected" ? "default" : "secondary"} className="text-xs">
+                          {session.status === "connected" ? "Conectada" : "Desconectada"}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </DialogHeader>

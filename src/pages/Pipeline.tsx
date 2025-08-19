@@ -293,12 +293,19 @@ export default function Pipeline() {
             setIsChatModalOpen(false);
             setSelectedLead(null);
           }}
-          session={{
-            id: `session-${selectedLead.id}`,
+          contact={{
+            id: selectedLead.id,
             name: selectedLead.name,
-            type: "whatsapp",
-            status: "connected"
+            phone: "+54 11 1234-5678",
+            lastSeen: new Date(Date.now() - 5 * 60 * 1000),
+            isOnline: Math.random() > 0.5
           }}
+          availableSessions={[
+            { id: "whatsapp-1", name: "WhatsApp Comercial", type: "whatsapp", status: "connected" },
+            { id: "instagram-1", name: "Instagram @empresa", type: "instagram", status: "connected" },
+            { id: "facebook-1", name: "Facebook Page", type: "facebook", status: "disconnected" },
+            { id: "webchat-1", name: "Chat Web", type: "webchat", status: "connected" }
+          ]}
         />
       )}
     </div>

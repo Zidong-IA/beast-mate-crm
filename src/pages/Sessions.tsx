@@ -306,8 +306,18 @@ export default function Sessions() {
       {selectedSession && (
         <ChatModal
           isOpen={chatModalOpen}
-          onClose={() => setChatModalOpen(false)}
-          session={selectedSession}
+          onClose={() => {
+            setChatModalOpen(false);
+            setSelectedSession(null);
+          }}
+          contact={{
+            id: "mock-contact",
+            name: "Cliente de " + selectedSession.name,
+            phone: selectedSession.phone || "+54 11 1234-5678",
+            lastSeen: new Date(Date.now() - 5 * 60 * 1000),
+            isOnline: selectedSession.status === "connected"
+          }}
+          availableSessions={[selectedSession]}
         />
       )}
     </>

@@ -177,12 +177,19 @@ export function ContactSelector({ children }: ContactSelectorProps) {
             setIsChatModalOpen(false);
             setSelectedContact(null);
           }}
-          session={{
-            id: `session-${selectedContact.id}`,
+          contact={{
+            id: selectedContact.id,
             name: selectedContact.name,
-            type: selectedContact.platform,
-            status: selectedContact.status
+            phone: selectedContact.phone || "",
+            lastSeen: new Date(Date.now() - 5 * 60 * 1000),
+            isOnline: selectedContact.status === "connected"
           }}
+          availableSessions={[
+            { id: "whatsapp-1", name: "WhatsApp Comercial", type: "whatsapp", status: "connected" },
+            { id: "instagram-1", name: "Instagram @empresa", type: "instagram", status: "connected" },
+            { id: "facebook-1", name: "Facebook Page", type: "facebook", status: "disconnected" },
+            { id: "webchat-1", name: "Chat Web", type: "webchat", status: "connected" }
+          ]}
         />
       )}
     </>

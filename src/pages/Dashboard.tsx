@@ -43,12 +43,12 @@ export default function Dashboard() {
             <h1 className="text-2xl font-semibold">Dashboard</h1>
             <p className="text-sm text-muted-foreground">Resumen de actividad y métricas clave.</p>
           </div>
-          <ContactSelector>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo mensaje
-            </Button>
-          </ContactSelector>
+
+
+
+
+
+          
         </div>
       </section>
 

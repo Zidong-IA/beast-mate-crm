@@ -123,4 +123,24 @@ All colors MUST be HSL.
     transform: translateY(-2px);
     box-shadow: 0 16px 36px -12px hsl(var(--primary)/0.35);
   }
+  
+  /* WhatsApp-style chat utilities */
+  .chat-bubble-sent {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-radius: 12px 12px 4px 12px;
+  }
+  .chat-bubble-received {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    border-radius: 12px 12px 12px 4px;
+  }
+  
+  /* Line clamp utility */
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }

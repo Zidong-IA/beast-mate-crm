@@ -1,4 +1,4 @@
-import { LayoutDashboard, KanbanSquare, Users, Settings as SettingsIcon } from "lucide-react";
+import { LayoutDashboard, KanbanSquare, Users, Settings as SettingsIcon, MessageCircle, Zap, Send } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -21,6 +21,9 @@ const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Pipeline", url: "/pipeline", icon: KanbanSquare },
   { title: "Contactos", url: "/contacts", icon: Users },
+  { title: "Respuestas Rápidas", url: "/quick-replies", icon: Zap },
+  { title: "Sesiones", url: "/sessions", icon: MessageCircle },
+  { title: "Mensajería Masiva", url: "/mass-messaging", icon: Send },
   { title: "Configuración", url: "/settings", icon: SettingsIcon },
 ];
 

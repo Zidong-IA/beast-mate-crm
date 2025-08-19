@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger, SidebarInput } from "@/c
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCcw } from "lucide-react";
+import { ContactSelector } from "@/components/ContactSelector";
 
 export default function AppLayout() {
   // Default to dark appearance (fits BeastCRM style)
@@ -29,10 +30,12 @@ export default function AppLayout() {
                 <RefreshCcw className="h-4 w-4" />
                 <span>Actualizar</span>
               </Button>
-              <Button variant="hero" size="sm">
-                <Plus className="h-4 w-4" />
-                <span>Nuevo mensaje</span>
-              </Button>
+              <ContactSelector>
+                <Button variant="hero" size="sm">
+                  <Plus className="h-4 w-4" />
+                  <span>Nuevo mensaje</span>
+                </Button>
+              </ContactSelector>
             </div>
           </header>
           <div className="p-4">
